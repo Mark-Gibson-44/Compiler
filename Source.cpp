@@ -1,7 +1,7 @@
-#include "Lexer.h"
 
+#include "Parser.h"
 int main()
 {
 	Lexer t("testLang.txt");
-	t.LogTokens();
+	Parser p(t.getLexed());
 }
