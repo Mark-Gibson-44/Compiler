@@ -13,37 +13,47 @@ typedef enum {
 	Tok_semi = 5,
 	Tok_numeric_literal = 6,
 	Tok_fun = 7,
+	Tok_equ = 8,
+	Tok_opBrace = 9,
+	Tok_if = 10,
 
-
-	Tok_EOF= 10,
+	Tok_EOF= 49,
 	Tok_invalid = 50
 	
 } Tokens;
+std::string to_string(Tokens t)
+{
+	switch (t)
+	{
+	case Tok_semi:
+		return "Semi-Colon"; break;
+	case Tok_arithmetic_op:
+		return "Arithmetic_Op"; break;
+	case Tok_bool_op:
+		return "Bool_Op"; break;
+	case Tok_type_decl:
+		return "TypeDeclr"; break;
+	case Tok_varName:
+		return "Var_name"; break;
+	case Tok_numeric_literal:
+		return "Numeric_literal"; break;
+	case Tok_equ:
+		return "Equal"; break;
+	case Tok_opBrace:
+		return "Open Brace"; break;
+	case Tok_EOF:
+		return "EndOfFile"; break;
+	case Tok_if:
+		return "If"; break;
+	case Tok_fun:
+		return "Function"; break;
 
+
+	}
+}
 class Lexer
 {
-	std::string to_string(Tokens t)
-	{
-		switch (t)
-		{
-		case Tok_semi:
-			return "Semi-Colon"; break;
-		case Tok_arithmetic_op:
-			return "Arithmetic_Op"; break;
-		case Tok_bool_op:
-			return "Bool_Op"; break;
-		case Tok_type_decl:
-			return "TypeDeclr"; break;
-		case Tok_varName:
-			return "Var_name"; break;
-		case Tok_numeric_literal:
-			return "Numeric_literal"; break;
-		case Tok_EOF:
-			return "EndOfFile"; break;
-
-
-		}
-	}
+	
 public:
 	std::vector<Tokens> lexedProgram;
 	std::string curLexeme = "";
@@ -76,6 +86,22 @@ public:
 	bool evalSemiColon(std::string& lex)
 	{
 		return lex == ";";
+	}
+	bool evalEqu(std::string& lex)
+	{
+		return lex == "=";
+	}
+	bool evalLBrace(std::string& lex)
+	{
+		return lex == "{";
+	}
+	bool evalIf(std::string& lex)
+	{
+		return lex == "?";
+	}
+	bool evalFunc(std::string& lex)
+	{
+		return lex == "def";
 	}
 
 	//TODO create a list of funcitonPtrs to iterate Over
@@ -136,6 +162,26 @@ public:
 			lexedProgram.push_back(Tok_numeric_literal);
 			return;
 		}
+		if (this->evalEqu(lexeme))
+		{
+			lexedProgram.push_back(Tok_equ);
+			return;
+		}
+		if (this->evalLBrace(lexeme))
+		{
+			lexedProgram.push_back(Tok_opBrace);
+			return;
+		}
+		if (this->evalIf(lexeme))
+		{
+			lexedProgram.push_back(Tok_if);
+			return;
+		}
+		if (this->evalFunc(lexeme))
+		{
+			lexedProgram.push_back(Tok_fun);
+			return;
+		}
 	}
 
 	Lexer(const char* fName)
@@ -163,7 +209,7 @@ public:
 	{
 		for (auto a : lexedProgram)
 		{
-			std::cout << this->to_string(a) << std::endl;
+			std::cout << to_string(a) << std::endl;
 		}
 	}
 	std::vector<Tokens> getLexed()
