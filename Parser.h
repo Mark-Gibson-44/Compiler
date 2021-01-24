@@ -1,5 +1,6 @@
 #pragma once
 #include "Lexer.h"
+#include "Types.h"
 
 typedef enum
 {
@@ -73,21 +74,22 @@ class Parser
 		getParseTokens(a);
 	}
 public:
-	Parser(std::vector<Tokens> Lexeme)
+	Parser(std::vector<std::pair<Tokens, std::string>>  Lexeme)
 	{
 		std::vector<Tokens> curParse;
 		for (auto a : Lexeme)
 		{
-			if (a == Tok_semi)
+			if (a.first == Tok_semi)
 			{
 				evalParsed(curParse);
 				curParse.clear();
 			}
 			else
-				curParse.push_back(a);
+				curParse.push_back(a.first);
 		}
 		//Parse stuff idk
 	}
+
 	void logParseTokens()
 	{
 		for (auto& a : pt)

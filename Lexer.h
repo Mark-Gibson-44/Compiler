@@ -4,6 +4,8 @@
 #include <regex>
 #include <functional>
 #include <iostream>
+using FuncPtr = bool (*)(std::string, std::string&);//Will use for FuncPtrs when refactoring
+
 
 typedef enum {
 	Tok_type_decl = 1,
@@ -16,7 +18,7 @@ typedef enum {
 	Tok_equ = 8,
 	Tok_opBrace = 9,
 	Tok_if = 10,
-
+	Tok_RBrace = 11,
 	Tok_EOF= 49,
 	Tok_invalid = 50
 	
@@ -41,6 +43,8 @@ std::string to_string(Tokens t)
 		return "Equal"; break;
 	case Tok_opBrace:
 		return "Open Brace"; break;
+	case Tok_RBrace:
+		return "Close Brace"; break;
 	case Tok_EOF:
 		return "EndOfFile"; break;
 	case Tok_if:
@@ -51,15 +55,21 @@ std::string to_string(Tokens t)
 
 	}
 }
+
 class Lexer
 {
 	
 public:
-	std::vector<Tokens> lexedProgram;
+	std::vector<std::pair<Tokens,std::string>> lexedProgram;
+	std::string lastType = "";
 	std::string curLexeme = "";
+	std::vector<std::pair<std::string,std::string>> varNames;
 
+	//TODO make this into 1 function or something
 	bool evalTypeDeclr(std::string& lex)
 	{
+		
+		
 		std::regex Types("^(int|char|bool)$");
 		return std::regex_match(lex, Types);
 	}
@@ -94,6 +104,10 @@ public:
 	bool evalLBrace(std::string& lex)
 	{
 		return lex == "{";
+	}
+	bool evalRBrace(std::string& lex)
+	{
+		return lex == "}";
 	}
 	bool evalIf(std::string& lex)
 	{
@@ -134,7 +148,8 @@ public:
 		
 		if (this->evalTypeDeclr(lexeme))
 		{
-			lexedProgram.push_back(Tok_type_decl);
+			lastType = lexeme;
+			lexedProgram.push_back(std::make_pair(Tok_type_decl, lexeme));
 			return;
 		}
 		/*if (this->evalArithmeticOp(lexeme))
@@ -144,46 +159,61 @@ public:
 		}*/
 		if (this->evalVarName(lexeme))
 		{
-			lexedProgram.push_back(Tok_varName);
+			
+			lexedProgram.push_back(std::make_pair(Tok_varName, lexeme));
 			return;
 		}
 		if (this->evalBoolOp(lexeme))
 		{
-			lexedProgram.push_back(Tok_bool_op);
+			
+			lexedProgram.push_back(std::make_pair(Tok_bool_op, lexeme));
 			return;
 		}
 		if (this->evalSemiColon(lexeme))
 		{
-			lexedProgram.push_back(Tok_semi);
+			
+			lexedProgram.push_back(std::make_pair(Tok_semi, lexeme));
+
 			return;
 		}
 		if (this->evalNumericLiteral(lexeme))
 		{
-			lexedProgram.push_back(Tok_numeric_literal);
+			
+			lexedProgram.push_back(std::make_pair(Tok_numeric_literal, lexeme));
 			return;
 		}
 		if (this->evalEqu(lexeme))
 		{
-			lexedProgram.push_back(Tok_equ);
+			
+			lexedProgram.push_back(std::make_pair(Tok_equ, lexeme));
 			return;
 		}
 		if (this->evalLBrace(lexeme))
 		{
-			lexedProgram.push_back(Tok_opBrace);
+		
+			lexedProgram.push_back(std::make_pair(Tok_opBrace, lexeme));
+			return;
+		}
+		if (this->evalRBrace(lexeme))
+		{
+			
+			lexedProgram.push_back(std::make_pair(Tok_RBrace, lexeme));
 			return;
 		}
 		if (this->evalIf(lexeme))
 		{
-			lexedProgram.push_back(Tok_if);
+			
+			lexedProgram.push_back(std::make_pair(Tok_if, lexeme));
 			return;
 		}
 		if (this->evalFunc(lexeme))
 		{
-			lexedProgram.push_back(Tok_fun);
+		
+			lexedProgram.push_back(std::make_pair(Tok_fun, lexeme));
 			return;
 		}
 	}
-
+	
 	Lexer(const char* fName)
 	{
 		char buff;
@@ -196,6 +226,8 @@ public:
 			if (buff == ' ' || buff == '\n')
 			{
 				evalWord(curLexeme);
+				if (evalVarName(curLexeme) && this->lexedProgram[lexedProgram.size() - 2].first == 1)
+					varNames.push_back(std::make_pair(lastType, curLexeme));
 				curLexeme = "";
 			}
 			else
@@ -203,17 +235,26 @@ public:
 
 		}
 		evalWord(curLexeme);
-		lexedProgram.push_back(Tok_EOF);
+		lexedProgram.push_back(std::make_pair(Tok_EOF, "EOF"));
 	}
 	void LogTokens()
 	{
 		for (auto a : lexedProgram)
 		{
-			std::cout << to_string(a) << std::endl;
+			std::cout << to_string(a.first) << std::endl;
 		}
 	}
-	std::vector<Tokens> getLexed()
+	
+	void varInfo()
+	{
+		for (auto& a : varNames)
+		{
+			std::cout << "Var : " << a.second << " Is type : " << a.first << std::endl;
+		}
+	}
+	std::vector<std::pair<Tokens,std::string>> getLexed()
 	{
 		return this->lexedProgram;
 	}
+	
 };
