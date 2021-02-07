@@ -37,6 +37,8 @@ public:
 		for (auto a: s->scopeVars)
 		{
 			std::cout << a.first << " Of type : " << typeToString(a.second->t) << std::endl;
+			if (a.second->init)
+				std::cout << "With Value: " << a.second->value << std::endl;
 		}
 		if (s->outer == nullptr)
 			return;

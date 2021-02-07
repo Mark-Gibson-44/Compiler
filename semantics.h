@@ -13,13 +13,19 @@ class Semantics
 		current = deep;//set the current to be the new one which will be the deepest;
 	}
 	void typeChecking();
-	void evaluateDeclaration(std::string t, std::string a)
+	void evaluateDeclaration(std::string t, std::string a, bool assign=false, std::string li = "")
 	{
 		if (current->inScope(a))
 			return;
-		
+		if (assign)
+		{
+			auto as = new Ty(deduceType(t), stoi(li));
+			current->addVar(a, as);
+			return;
+		}
 		auto b = new Ty( deduceType(t) );
 		current->addVar(a,b);
+
 	}
 	void evaluateReference(std::string var, std::string ass)
 	{
@@ -30,10 +36,10 @@ class Semantics
 public:
 	Semantics(std::vector<std::pair<Tokens, std::string>> p) {
 		current = &Global;
-		for (int i = 0; i < p.size(); i++)
+		for (int i = 0; i < p.size()-2; i++)
 		{
 			if (p[i].first == Tok_varName && p[i-1].first == Tok_type_decl)
-				evaluateDeclaration(p[i-1].second, p[i].second);
+				evaluateDeclaration(p[i-1].second, p[i].second, (p[i+2].first == Tok_numeric_literal), p[i+2].second);
 			if (p[i].first == Tok_equ && p[i - 1].first == Tok_varName)
 				evaluateReference(p[i - 1].second, p[i + 1].second);
 		}

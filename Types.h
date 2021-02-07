@@ -36,14 +36,22 @@ public:
 	TypeNames t;
 	size_t value = 0; //Value of a variable represented by bytes. Might use bitset
 	size_t size = 0;//Size in bytes of a given type;
+	bool init = false;
 	Ty(TypeNames a)
 	{
 		t = a;
 
 	}
+	Ty(TypeNames a, int liter)
+	{
+		t = a;
+		this->value = liter;
+		this->init = true;
+	}
 	void assign(int val)
 	{
 		this->value = val;
+		this->init = true;
 	}
 
 
