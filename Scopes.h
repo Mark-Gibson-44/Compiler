@@ -2,6 +2,7 @@
 #include "Types.h"
 #include <map>
 #include <iostream>
+#include "operator.h"
 #include <string>
 
 
@@ -9,9 +10,12 @@ class Scope
 {
 public:
 	Scope* outer;//pointer to scope Preceding it, Global scopes outer will point to nullptr
-	std::map<std::string, Ty*> scopeVars;
+	
+	std::map<std::string, varTy*> scopeVars;
 	Scope(Scope* current = nullptr)
 	{
+		
+
 		outer = current;
 	}
 
@@ -31,6 +35,13 @@ public:
 
 		return ret;
 	}
+	
+	varTy* getVar(std::string& name)
+	{
+		if (inScope(name))
+			return scopeVars[name];
+
+	}
 	void logVars(Scope* s)
 	{
 		
@@ -45,9 +56,10 @@ public:
 		logVars(s->outer);
 
 	}
-	void addVar(std::string id, Ty* t)
+	void addVar(std::string id, varTy* t)
 	{
 		scopeVars[id] = t;
 	}
+	
 	
 };

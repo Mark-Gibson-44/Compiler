@@ -1,7 +1,10 @@
 int a = 1 ;
 int b = 2 ;
 ? a && b ;
+
+a + b ;
+b - a ;
 def int c ;
 def q ;
 char t ;
-bool 2 && b ;
+int q = 3 ;

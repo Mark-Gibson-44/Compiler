@@ -3,8 +3,10 @@
 #include <fstream>
 #include <regex>
 #include <functional>
+
 #include <iostream>
-using FuncPtr = bool (*)(std::string, std::string&);//Will use for FuncPtrs when refactoring
+using FuncPtr = bool (*)(std::string, std::string);//Will use for FuncPtrs when refactoring
+
 
 
 typedef enum {
@@ -19,6 +21,8 @@ typedef enum {
 	Tok_opBrace = 9,
 	Tok_if = 10,
 	Tok_RBrace = 11,
+	Tok_comment = 12,
+	Tok_if_end = 13,
 	Tok_EOF= 49,
 	Tok_invalid = 50
 	
@@ -51,6 +55,8 @@ std::string to_string(Tokens t)
 		return "If"; break;
 	case Tok_fun:
 		return "Function"; break;
+	case Tok_if_end:
+		return "Function"; break;
 
 
 	}
@@ -75,8 +81,8 @@ public:
 	}
 	bool evalArithmeticOp(std::string& lex)
 	{
-		std::regex ArithOps("^.\+$");
-		return std::regex_match(lex, ArithOps);
+		
+		return	(lex == "+" || lex == "-" || lex == "\\" || lex == "*");
 	}
 	bool evalNumericLiteral(std::string& lex)
 	{
@@ -117,6 +123,14 @@ public:
 	{
 		return lex == "def";
 	}
+	bool evalComment(std::string& lex)
+	{
+		return lex == "//";
+	}
+	bool evalIf_end(std::string& lex)
+	{
+		return lex == ":";
+	}
 
 	//TODO create a list of funcitonPtrs to iterate Over
 
@@ -152,11 +166,11 @@ public:
 			lexedProgram.push_back(std::make_pair(Tok_type_decl, lexeme));
 			return;
 		}
-		/*if (this->evalArithmeticOp(lexeme))
+		if (this->evalArithmeticOp(lexeme))
 		{
-			program.push_back(Tok_arithmetic_op);
+			lexedProgram.push_back(std::make_pair(Tok_arithmetic_op, lexeme));
 			return;
-		}*/
+		}
 		if (this->evalVarName(lexeme))
 		{
 			
@@ -206,12 +220,20 @@ public:
 			lexedProgram.push_back(std::make_pair(Tok_if, lexeme));
 			return;
 		}
+		
 		if (this->evalFunc(lexeme))
 		{
 		
 			lexedProgram.push_back(std::make_pair(Tok_fun, lexeme));
 			return;
 		}
+		if (this->evalIf_end(lexeme))
+		{
+
+			lexedProgram.push_back(std::make_pair(Tok_if_end, lexeme));
+			return;
+		}
+		
 	}
 	
 	Lexer(const char* fName)

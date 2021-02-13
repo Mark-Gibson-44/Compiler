@@ -1,6 +1,7 @@
 
 #include "Parser.h"
 #include "semantics.h"
+
 int main()
 {
 	Lexer t("testLang.txt");
